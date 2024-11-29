@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-
     if (Route::has('login') || Route::has('register')) {
         return to_route('register');
     }
