@@ -1,18 +1,23 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
 export default function Guest({ children }: PropsWithChildren) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                </Link>
-            </div>
-
-            <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg">
+        <div className="flex h-screen">
+            <div className="flex w-full min-w-72 max-w-screen-md flex-col p-10 md:w-[40vw]">
+                <h1 className="text-2xl font-bold">HaeBot ERP</h1>
                 {children}
+            </div>
+            <div className="group relative hidden flex-1 overflow-hidden md:block">
+                <img
+                    aria-hidden="true"
+                    alt=""
+                    src="https://i.ibb.co.com/CVnHpnX/andrii-solok-n5-SAdno3y7-Q-unsplash.jpg"
+                    decoding="async"
+                    data-nimg="fill"
+                    loading="lazy"
+                    className="size-full object-cover object-center transition duration-500 group-hover:blur-sm"
+                />
+                <div className="absolute inset-0 bg-black opacity-50 transition duration-500 group-hover:opacity-60"></div>
             </div>
         </div>
     );

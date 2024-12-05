@@ -1,56 +1,107 @@
-import InputError from '@/Components/InputError';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import { Button } from '@/Components/ui/button';
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/Components/ui/form';
+import { Input } from '@/Components/ui/input';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Head, Link, router } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-export default function ForgotPassword({ status }: { status?: string }) {
-    const { data, setData, post, processing, errors } = useForm({
-        email: '',
+const formSchema = z.object({
+    email: z.string().min(1, { message: 'Email is required' }).email(),
+});
+
+export default function ForgotPassword() {
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            email: '',
+        },
     });
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-
-        post(route('password.email'));
-    };
+    function onSubmit(data: z.infer<typeof formSchema>) {
+        router.post(route('password.email'), data);
+    }
 
     return (
         <GuestLayout>
             <Head title="Forgot Password" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that will
-                allow you to choose a new one.
-            </div>
+            <Form {...form}>
+                <form
+                    className="mx-auto flex w-full max-w-80 flex-1 flex-col items-center justify-center"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                >
+                    <div className="w-full space-y-4">
+                        <div>
+                            <div className="mb-1 text-sm text-muted-foreground">
+                                Start your journey
+                            </div>
+                            <h2 className="text-xl font-bold">
+                                Forgot Password
+                            </h2>
+                        </div>
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            name="email"
+                                            value={field.value}
+                                            className="mt-1 block w-full"
+                                            onChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Forgot your password? No problem. Just
+                                        let us know your email address and we
+                                        will email you a password reset link
+                                        that will allow you to choose a new one.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="w-full pt-4">
+                        <Button
+                            variant="gooeyRight"
+                            className="w-full"
+                            type="submit"
+                        >
+                            Email Password Reset Link
+                        </Button>
+                    </div>
+                </form>
+
+                <div>
+                    <Button
+                        variant="linkHover2"
+                        className="text-xs text-primary"
+                        asChild
+                    >
+                        <Link href={route('login')}>
+                            <ArrowLeft className="mr-1 size-3" /> Back?
+                        </Link>
+                    </Button>
                 </div>
-            )}
-
-            <form onSubmit={submit}>
-                <TextInput
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
-
-                <InputError message={errors.email} className="mt-2" />
-
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Email Password Reset Link
-                    </PrimaryButton>
-                </div>
-            </form>
+            </Form>
         </GuestLayout>
     );
 }

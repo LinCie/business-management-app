@@ -1,11 +1,27 @@
-import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/Components/ui/form';
+import { Input } from '@/Components/ui/input';
+import { PasswordInput } from '@/Components/ui/password-input';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+const formSchema = z.object({
+    email: z.string().min(1, { message: 'Email is required' }).email(),
+    password: z.string().min(1, { message: 'Password is required' }),
+    remember: z.boolean(),
+});
 
 export default function Login({
     status,
@@ -14,94 +30,125 @@ export default function Login({
     status?: string;
     canResetPassword: boolean;
 }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
-        remember: false,
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            email: '',
+            password: '',
+            remember: false,
+        },
     });
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-
-        post(route('login'), {
-            onFinish: () => reset('password'),
+    function onSubmit(data: z.infer<typeof formSchema>) {
+        router.post(route('login'), data, {
+            onFinish: () => form.reset({ password: '' }),
         });
-    };
+    }
 
     return (
         <GuestLayout>
             <Head title="Log in" />
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            <Form {...form}>
+                <form
+                    className="mx-auto flex w-full max-w-80 flex-1 flex-col items-center justify-center"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                >
+                    <div className="w-full space-y-4">
+                        <div>
+                            <div className="mb-1 text-sm text-muted-foreground">
+                                Start your journey
+                            </div>
+                            <h2 className="text-xl font-bold">
+                                Login to HaeBot ERP
+                            </h2>
+                        </div>
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4 block">
-                    <label className="flex items-center">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) =>
-                                setData('remember', e.target.checked)
-                            }
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="han@haebot.com"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                        <span className="ms-2 text-sm text-gray-600">
-                            Remember me
-                        </span>
-                    </label>
-                </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            Forgot your password?
-                        </Link>
-                    )}
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
+                                        <PasswordInput {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
+                        <FormField
+                            control={form.control}
+                            name="remember"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                    <FormLabel>Remember me</FormLabel>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <div className="flex flex-col gap-2 pt-4">
+                            <Button
+                                className="w-full"
+                                variant="gooeyRight"
+                                type="submit"
+                            >
+                                Login
+                            </Button>
+                            {canResetPassword && (
+                                <Link
+                                    href={route('password.request')}
+                                    className="rounded-md text-end text-sm text-gray-600 underline hover:text-gray-900"
+                                >
+                                    Forgot your password?
+                                </Link>
+                            )}
+                        </div>
+
+                        {status && (
+                            <div className="mb-4 text-sm font-medium text-green-600">
+                                {status}
+                            </div>
+                        )}
+                    </div>
+                </form>
+
+                <div className="text-sm text-muted-foreground">
+                    Need an Account?{' '}
+                    <Button
+                        asChild
+                        variant="linkHover2"
+                        className="m-0 p-0 text-primary"
+                    >
+                        <Link href={route('register')}>Register</Link>
+                    </Button>
                 </div>
-            </form>
+            </Form>
         </GuestLayout>
     );
 }

@@ -4,7 +4,7 @@
     "scripts": {
         "build": "tsc && vite build",
         "dev": "vite",
-        "online": "concurrently \"composer run dev\" \"ssh -R haebot:80:127.0.0.1:8000 serveo.net\"",
+        "online": "concurrently \"composer run dev\" \"ssh -R haecok:80:127.0.0.1:8000 serveo.net\"",
         "lint": "eslint resources/js --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore --fix"
     },
     "devDependencies": {

@@ -1,121 +1,151 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Head, Link, router } from '@inertiajs/react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-export default function Register() {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
+import { Button } from '@/Components/ui/button';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/Components/ui/form';
+import { Input } from '@/Components/ui/input';
+import { PasswordInput } from '@/Components/ui/password-input';
+
+const formSchema = z
+    .object({
+        name: z.string().min(1, { message: 'Name is required' }),
+        email: z.string().min(1, { message: 'Email is required' }).email(),
+        password: z.string().min(8),
+        password_confirmation: z.string().min(8),
+    })
+    .refine((data) => data.password === data.password_confirmation, {
+        message: "Passwords don't match",
     });
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
+export default function Register() {
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            name: '',
+            email: '',
+            password: '',
+            password_confirmation: '',
+        },
+    });
 
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
+    function onSubmit(data: z.infer<typeof formSchema>) {
+        router.post(route('register'), data, {
+            onFinish: () =>
+                form.reset({ password: '', password_confirmation: '' }),
         });
-    };
+    }
 
     return (
         <GuestLayout>
             <Head title="Register" />
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
+            <Form {...form}>
+                <form
+                    className="mx-auto flex w-full max-w-80 flex-1 flex-col items-center justify-center"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                >
+                    <div className="w-full space-y-4">
+                        <div>
+                            <div className="mb-1 text-sm text-muted-foreground">
+                                Start your journey
+                            </div>
+                            <h2 className="text-xl font-bold">
+                                Register to HaeBot ERP
+                            </h2>
+                        </div>
 
-                    <TextInput
-                        id="name"
-                        name="name"
-                        value={data.name}
-                        className="mt-1 block w-full"
-                        autoComplete="name"
-                        isFocused={true}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                    />
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Name</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Ahmad Hae"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="ahmad@haebot.com"
+                                            type="email"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
+                                        <PasswordInput {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password_confirmation"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Confirm Password</FormLabel>
+                                    <FormControl>
+                                        <PasswordInput {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="pt-4">
+                            <Button
+                                type="submit"
+                                variant="gooeyRight"
+                                className="w-full"
+                            >
+                                Register
+                            </Button>
+                        </div>
+                    </div>
+                </form>
+            </Form>
 
-                    <InputError message={errors.name} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                        required
-                    />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Already registered?
-                    </Link>
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
-                </div>
-            </form>
+            <div className="text-sm text-muted-foreground">
+                Have an Account?{' '}
+                <Button
+                    asChild
+                    variant="linkHover2"
+                    className="m-0 p-0 text-primary"
+                >
+                    <Link href={route('login')}>Login</Link>
+                </Button>
+            </div>
         </GuestLayout>
     );
 }
